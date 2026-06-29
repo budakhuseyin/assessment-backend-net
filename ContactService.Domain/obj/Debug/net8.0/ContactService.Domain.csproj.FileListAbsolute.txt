@@ -1,0 +1,12 @@
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.AssemblyInfoInputs.cache
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.AssemblyInfo.cs
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.csproj.CoreCompileInputs.cache
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.sourcelink.json
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/bin/Debug/net8.0/ContactService.Domain.deps.json
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/bin/Debug/net8.0/ContactService.Domain.dll
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/bin/Debug/net8.0/ContactService.Domain.pdb
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.dll
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/refint/ContactService.Domain.dll
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ContactService.Domain.pdb
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Domain/obj/Debug/net8.0/ref/ContactService.Domain.dll
