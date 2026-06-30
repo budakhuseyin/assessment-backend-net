@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/ReportService.API.props" />
-</Project>
