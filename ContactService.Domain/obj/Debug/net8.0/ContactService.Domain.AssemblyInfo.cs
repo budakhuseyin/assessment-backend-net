@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ContactService.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bd072a9f24c7472124531b771a74eec1e3018919")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b6a013f8bdad17e229d486bff3e5001c1eac3a3d")]
 [assembly: System.Reflection.AssemblyProductAttribute("ContactService.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ContactService.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
