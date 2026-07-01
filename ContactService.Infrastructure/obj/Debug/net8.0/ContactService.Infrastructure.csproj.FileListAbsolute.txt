@@ -16,3 +16,5 @@
 /Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Infrastructure/obj/Debug/net8.0/refint/ContactService.Infrastructure.dll
 /Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Infrastructure/obj/Debug/net8.0/ContactService.Infrastructure.pdb
 /Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Infrastructure/obj/Debug/net8.0/ref/ContactService.Infrastructure.dll
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Infrastructure/bin/Debug/net8.0/ContactService.Infrastructure.runtimeconfig.json
+/Users/huseyin/Desktop/aras-kargo/ArasContactDirectory/ContactService.Infrastructure/obj/Debug/net8.0/ContactService.Infrastructure.genruntimeconfig.cache

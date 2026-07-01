@@ -1,9 +1,25 @@
+using ContactService.Application.Interfaces.Repositories;
+using ContactService.Infrastructure.Contexts;
+using ContactService.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure DbContext
+builder.Services.AddDbContext<ContactDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
+});
+
+// Configure Dependency Injection for Repositories
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<IContactInfoRepository, ContactInfoRepository>();
 
 var app = builder.Build();
 
