@@ -1,16 +1,20 @@
 using ContactService.Application.Interfaces.Repositories;
+using ContactService.Application.Interfaces.Services;
 using ContactService.Infrastructure.Contexts;
 using ContactService.Infrastructure.Repositories;
+using ContactService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Configure DbContext
+// Controller desteğini ekle
+builder.Services.AddControllers();
+
+// Configure DbContext with PostgreSQL
 builder.Services.AddDbContext<ContactDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql"));
@@ -20,6 +24,10 @@ builder.Services.AddDbContext<ContactDbContext>(options =>
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<IContactInfoRepository, ContactInfoRepository>();
+
+// Configure Dependency Injection for Services
+builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IContactInfoService, ContactInfoService>();
 
 var app = builder.Build();
 
@@ -32,29 +40,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+// Controller route'larını aktif et
+app.MapControllers();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
