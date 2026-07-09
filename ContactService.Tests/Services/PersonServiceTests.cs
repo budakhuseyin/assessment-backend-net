@@ -14,14 +14,16 @@ public class PersonServiceTests
 
     public PersonServiceTests()
     {
-        // 1. Arrange (Hazırlık)
         // Gerçek bir veritabanı kullanmak yerine Moq kütüphanesi ile "sahte (mock)" bir repository oluşturuyoruz.
         _mockPersonRepository = new Mock<IPersonRepository>();
-        
+
         // Servisimizi bu sahte repository ile ayağa kaldırıyoruz.
-        // Not: CreateAsync metodu DbContext kullanmadığı için DbContext parametresine null geçiyoruz.
+        // Not: GetAllAsync ve GetByIdAsync DbContext kullandığı için sadece bu metodları test ederken
+        // repository mock'u yeterli, DbContext'e ihtiyaç yok. Bu yüzden null! geçiyoruz.
         _personService = new PersonService(_mockPersonRepository.Object, null!);
     }
+
+    // ─────────────────────────── CreateAsync Testleri ───────────────────────────
 
     [Fact]
     public async Task CreateAsync_ValidRequest_ShouldReturnPersonResponseWithSameData()
@@ -34,24 +36,76 @@ public class PersonServiceTests
             Company = "Aras Kargo"
         };
 
-        // Repository'nin AddAsync metodu çağrıldığında hiçbir şey yapmadan başarılı dönmesini (CompletedTask) söylüyoruz.
         _mockPersonRepository
             .Setup(repo => repo.AddAsync(It.IsAny<Person>()))
             .Returns(Task.CompletedTask);
 
         // 2. Act (Eylem)
-        // Test etmek istediğimiz asıl metodu çağırıyoruz.
         var result = await _personService.CreateAsync(request);
 
         // 3. Assert (Doğrulama)
-        // Metodun döndüğü sonucun, bizim gönderdiğimiz request ile aynı olup olmadığını kontrol ediyoruz.
         Assert.NotNull(result);
-        Assert.NotEqual(Guid.Empty, result.UUID); // Guid üretilmiş olmalı
+        Assert.NotEqual(Guid.Empty, result.UUID);       // Benzersiz bir UUID üretilmeli
         Assert.Equal(request.FirstName, result.FirstName);
         Assert.Equal(request.LastName, result.LastName);
         Assert.Equal(request.Company, result.Company);
-        
-        // AddAsync metodunun tam olarak 1 kere çağrıldığından emin oluyoruz.
+
+        // AddAsync tam olarak 1 kere çağrılmış olmalı
         _mockPersonRepository.Verify(repo => repo.AddAsync(It.IsAny<Person>()), Times.Once);
+    }
+
+    // ─────────────────────────── DeleteAsync Testleri ───────────────────────────
+
+    [Fact]
+    public async Task DeleteAsync_ExistingPerson_ShouldReturnTrue()
+    {
+        // 1. Arrange
+        // Var olduğunu simüle edeceğimiz kişiyi hazırlıyoruz.
+        var existingPerson = new Person
+        {
+            UUID = Guid.NewGuid(),
+            FirstName = "Mehmet",
+            LastName = "Demir",
+            Company = "Aras Kargo"
+        };
+
+        // Bu UUID sorgulandığında kişiyi döndür.
+        _mockPersonRepository
+            .Setup(repo => repo.GetByIdAsync(existingPerson.UUID))
+            .ReturnsAsync(existingPerson);
+
+        _mockPersonRepository
+            .Setup(repo => repo.DeleteAsync(existingPerson.UUID))
+            .Returns(Task.CompletedTask);
+
+        // 2. Act
+        var result = await _personService.DeleteAsync(existingPerson.UUID);
+
+        // 3. Assert
+        Assert.True(result); // Kişi bulundu ve silindi → true dönmeli
+
+        // DeleteAsync tam olarak 1 kere çağrılmış olmalı
+        _mockPersonRepository.Verify(repo => repo.DeleteAsync(existingPerson.UUID), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_NonExistingPerson_ShouldReturnFalse()
+    {
+        // 1. Arrange
+        var nonExistingId = Guid.NewGuid();
+
+        // Bu UUID için null döndür → kişi veritabanında yok.
+        _mockPersonRepository
+            .Setup(repo => repo.GetByIdAsync(nonExistingId))
+            .ReturnsAsync((Person?)null);
+
+        // 2. Act
+        var result = await _personService.DeleteAsync(nonExistingId);
+
+        // 3. Assert
+        Assert.False(result); // Kişi bulunamadı → false dönmeli
+
+        // Kişi olmadığı için DeleteAsync hiç çağrılmamalıydı.
+        _mockPersonRepository.Verify(repo => repo.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 }
