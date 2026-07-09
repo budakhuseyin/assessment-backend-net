@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportService.Infrastructur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReportService.API", "ReportService.API\ReportService.API.csproj", "{6060595D-9DFD-4751-92E2-08F9F486C50E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContactService.Tests", "ContactService.Tests\ContactService.Tests.csproj", "{21D643D4-371B-4CF3-AC92-E89A24FF1900}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -60,5 +62,9 @@ Global
 		{6060595D-9DFD-4751-92E2-08F9F486C50E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6060595D-9DFD-4751-92E2-08F9F486C50E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6060595D-9DFD-4751-92E2-08F9F486C50E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21D643D4-371B-4CF3-AC92-E89A24FF1900}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21D643D4-371B-4CF3-AC92-E89A24FF1900}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21D643D4-371B-4CF3-AC92-E89A24FF1900}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21D643D4-371B-4CF3-AC92-E89A24FF1900}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
