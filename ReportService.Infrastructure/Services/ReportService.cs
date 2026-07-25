@@ -1,28 +1,32 @@
+using MassTransit;
 using ReportService.Application.DTOs;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Application.Interfaces.Services;
 using ReportService.Domain.Entities;
 using ReportService.Domain.Enums;
+using Shared.Messages.Events;
 
 namespace ReportService.Infrastructure.Services;
 
 /// <summary>
 /// Raporlama iş kurallarını uygulayan servis sınıfı.
-/// Rapor talebi alındığında veritabanına "Preparing" statüsünde kaydeder.
-/// RabbitMQ entegrasyonu tamamlandığında bu servis kuyruğa mesaj gönderecek.
+/// Rapor talebi alındığında "Preparing" statüsünde kaydeder ve
+/// RabbitMQ kuyruğuna ReportRequestedEvent yayınlar.
 /// </summary>
 public class ReportService : IReportService
 {
     private readonly IReportRepository _reportRepository;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public ReportService(IReportRepository reportRepository)
+    public ReportService(IReportRepository reportRepository, IPublishEndpoint publishEndpoint)
     {
         _reportRepository = reportRepository;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task<ReportResponse> CreateReportAsync()
     {
-        // Raporu "Hazırlanıyor" statüsünde oluştur
+        // Raporu "Hazırlanıyor" statüsünde oluştur ve veritabanına kaydet
         var report = new Report
         {
             UUID = Guid.NewGuid(),
@@ -32,9 +36,12 @@ public class ReportService : IReportService
 
         await _reportRepository.AddAsync(report);
 
-        // TODO: RabbitMQ entegrasyonu tamamlandığında buraya
-        // IPublishEndpoint.Publish(new ReportRequestedEvent { ReportId = report.UUID })
-        // kodu eklenecek.
+        // RabbitMQ kuyruğuna mesaj bırak; ContactService bu mesajı dinleyip
+        // istatistikleri hesaplayacak ve raporu güncelleyecek.
+        await _publishEndpoint.Publish(new ReportRequestedEvent
+        {
+            ReportId = report.UUID
+        });
 
         return MapToResponse(report);
     }

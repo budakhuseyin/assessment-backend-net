@@ -61,11 +61,10 @@ public class ContactInfoServiceTests
 
         // 3. Assert
         Assert.NotNull(result);
-        Assert.NotEqual(Guid.Empty, result.UUID);         // Yeni UUID üretilmeli
+        Assert.NotEqual(Guid.Empty, result.UUID);
         Assert.Equal(request.InfoType, result.InfoType);
         Assert.Equal(request.InfoContent, result.InfoContent);
 
-        // AddAsync tam olarak 1 kere çağrılmış olmalı
         _mockContactInfoRepository.Verify(repo => repo.AddAsync(It.IsAny<ContactInfo>()), Times.Once);
     }
 
@@ -81,18 +80,15 @@ public class ContactInfoServiceTests
             InfoContent = "ali@arasnot.com"
         };
 
-        // Kişi yok → null döndür
         _mockPersonRepository
             .Setup(repo => repo.GetByIdAsync(nonExistingPersonId))
             .ReturnsAsync((Person?)null);
 
         // 2. Act & Assert
-        // Bu metod çağrıldığında KeyNotFoundException fırlatılmasını bekliyoruz.
         await Assert.ThrowsAsync<KeyNotFoundException>(
             () => _contactInfoService.AddContactInfoAsync(nonExistingPersonId, request)
         );
 
-        // Kişi olmadığı için iletişim bilgisi hiç eklenmemiş olmalı
         _mockContactInfoRepository.Verify(repo => repo.AddAsync(It.IsAny<ContactInfo>()), Times.Never);
     }
 
@@ -122,8 +118,7 @@ public class ContactInfoServiceTests
         var result = await _contactInfoService.DeleteContactInfoAsync(existingContactInfo.UUID);
 
         // 3. Assert
-        Assert.True(result); // Bulundu ve silindi → true
-
+        Assert.True(result);
         _mockContactInfoRepository.Verify(repo => repo.DeleteAsync(existingContactInfo.UUID), Times.Once);
     }
 
@@ -141,9 +136,7 @@ public class ContactInfoServiceTests
         var result = await _contactInfoService.DeleteContactInfoAsync(nonExistingId);
 
         // 3. Assert
-        Assert.False(result); // Bulunamadı → false
-
-        // Kayıt olmadığı için DeleteAsync hiç çağrılmamalı
+        Assert.False(result);
         _mockContactInfoRepository.Verify(repo => repo.DeleteAsync(It.IsAny<Guid>()), Times.Never);
     }
 }
