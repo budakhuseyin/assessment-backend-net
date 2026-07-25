@@ -26,7 +26,6 @@ public class ReportService : IReportService
 
     public async Task<ReportResponse> CreateReportAsync()
     {
-        // Raporu "Hazırlanıyor" statüsünde oluştur ve veritabanına kaydet
         var report = new Report
         {
             UUID = Guid.NewGuid(),
@@ -36,12 +35,8 @@ public class ReportService : IReportService
 
         await _reportRepository.AddAsync(report);
 
-        // RabbitMQ kuyruğuna mesaj bırak; ContactService bu mesajı dinleyip
-        // istatistikleri hesaplayacak ve raporu güncelleyecek.
-        await _publishEndpoint.Publish(new ReportRequestedEvent
-        {
-            ReportId = report.UUID
-        });
+        // ContactService bu eventi dinleyip istatistikleri hesaplayacak ve raporu güncelleyecek
+        await _publishEndpoint.Publish(new ReportRequestedEvent { ReportId = report.UUID });
 
         return MapToResponse(report);
     }
@@ -56,6 +51,29 @@ public class ReportService : IReportService
     {
         var report = await _reportRepository.GetByIdWithDetailsAsync(id);
         return report == null ? null : MapToResponse(report);
+    }
+
+    public async Task<bool> CompleteReportAsync(Guid reportId, CompleteReportRequest request)
+    {
+        var report = await _reportRepository.GetByIdWithDetailsAsync(reportId);
+        if (report == null) return false;
+
+        foreach (var detail in request.Details)
+        {
+            report.ReportDetails.Add(new ReportDetail
+            {
+                UUID = Guid.NewGuid(),
+                Location = detail.Location,
+                PersonCount = detail.PersonCount,
+                PhoneNumberCount = detail.PhoneNumberCount,
+                ReportUUID = report.UUID
+            });
+        }
+
+        report.Status = ReportStatus.Completed;
+        await _reportRepository.UpdateAsync(report);
+
+        return true;
     }
 
     // Entity'den DTO'ya dönüşüm (private yardımcı metod)
@@ -73,3 +91,4 @@ public class ReportService : IReportService
         }).ToList()
     };
 }
+

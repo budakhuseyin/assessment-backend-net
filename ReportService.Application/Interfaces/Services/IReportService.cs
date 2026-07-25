@@ -21,4 +21,10 @@ public interface IReportService
     /// UUID ile bir raporu detaylarıyla birlikte getirir.
     /// </summary>
     Task<ReportResponse?> GetByIdAsync(Guid id);
+
+    /// <summary>
+    /// ContactService'ten gelen istatistikleri rapora ekler ve statüsünü Completed yapar.
+    /// </summary>
+    Task<bool> CompleteReportAsync(Guid reportId, CompleteReportRequest request);
 }
+
