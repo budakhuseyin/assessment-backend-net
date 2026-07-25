@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ReportService.Application.DTOs;
 using ReportService.Application.Interfaces.Services;
 
 namespace ReportService.API.Controllers;
@@ -48,4 +49,16 @@ public class ReportController : ControllerBase
         var created = await _reportService.CreateReportAsync();
         return CreatedAtAction(nameof(GetById), new { id = created.UUID }, created);
     }
+
+    /// <summary>
+    /// ContactService tarafından çağrılır; raporu tamamlar ve detayları kaydeder.
+    /// </summary>
+    [HttpPut("{id:guid}/complete")]
+    public async Task<IActionResult> Complete(Guid id, [FromBody] CompleteReportRequest request)
+    {
+        var success = await _reportService.CompleteReportAsync(id, request);
+        if (!success) return NotFound();
+        return NoContent();
+    }
 }
+
