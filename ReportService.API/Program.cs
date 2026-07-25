@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Application.Interfaces.Services;
@@ -24,6 +25,20 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 // Configure Dependency Injection for Services
 builder.Services.AddScoped<IReportService, ReportService.Infrastructure.Services.ReportService>();
 
+// Configure MassTransit with RabbitMQ
+// Bu servis yalnızca Publisher rolündedir; mesaj yayınlar, dinlemez.
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -36,3 +51,4 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
