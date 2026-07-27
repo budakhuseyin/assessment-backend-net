@@ -1,7 +1,9 @@
+using MassTransit;
 using Moq;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Domain.Entities;
 using ReportService.Domain.Enums;
+using Shared.Messages.Events;
 using Xunit;
 
 namespace ReportService.Tests.Services;
@@ -9,12 +11,14 @@ namespace ReportService.Tests.Services;
 public class ReportServiceTests
 {
     private readonly Mock<IReportRepository> _mockReportRepository;
+    private readonly Mock<IPublishEndpoint> _mockPublishEndpoint;
     private readonly ReportService.Infrastructure.Services.ReportService _reportService;
 
     public ReportServiceTests()
     {
         _mockReportRepository = new Mock<IReportRepository>();
-        _reportService = new ReportService.Infrastructure.Services.ReportService(_mockReportRepository.Object);
+        _mockPublishEndpoint = new Mock<IPublishEndpoint>();
+        _reportService = new ReportService.Infrastructure.Services.ReportService(_mockReportRepository.Object, _mockPublishEndpoint.Object);
     }
 
     // ─────────────────────────── CreateReportAsync Testleri ───────────────────────────
@@ -141,5 +145,32 @@ public class ReportServiceTests
 
         // 3. Assert
         Assert.Null(result); // Rapor yoksa null dönmeli
+    }
+
+    // ─────────────────────────── CompleteReportAsync Testleri ───────────────────────────
+
+    [Fact]
+    public async Task CompleteReportAsync_ExistingReport_ShouldReturnTrueAndCallCompleteAsync()
+    {
+        // 1. Arrange
+        var reportId = Guid.NewGuid();
+        var request = new Application.DTOs.CompleteReportRequest
+        {
+            Details = new List<Application.DTOs.ReportDetailRequest>
+            {
+                new() { Location = "İstanbul", PersonCount = 5, PhoneNumberCount = 10 }
+            }
+        };
+
+        _mockReportRepository
+            .Setup(repo => repo.CompleteAsync(reportId, It.IsAny<IEnumerable<ReportDetail>>()))
+            .ReturnsAsync(true);
+
+        // 2. Act
+        var result = await _reportService.CompleteReportAsync(reportId, request);
+
+        // 3. Assert
+        Assert.True(result);
+        _mockReportRepository.Verify(repo => repo.CompleteAsync(reportId, It.IsAny<IEnumerable<ReportDetail>>()), Times.Once);
     }
 }

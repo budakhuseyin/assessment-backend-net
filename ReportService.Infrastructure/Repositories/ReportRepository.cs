@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Domain.Entities;
+using ReportService.Domain.Enums;
 using ReportService.Infrastructure.Contexts;
 
 namespace ReportService.Infrastructure.Repositories;
@@ -27,4 +28,17 @@ public class ReportRepository : GenericRepository<Report>, IReportRepository
             .Include(r => r.ReportDetails)
             .ToListAsync();
     }
+
+    public async Task<bool> CompleteAsync(Guid reportId, IEnumerable<ReportDetail> newDetails)
+    {
+        var report = await _context.Reports.FirstOrDefaultAsync(r => r.UUID == reportId);
+        if (report == null) return false;
+
+        // Doğrudan DbSet üzerinden ekleme — EF Core bu nesneleri kesin "Added" olarak işaretler
+        await _context.ReportDetails.AddRangeAsync(newDetails);
+        report.Status = ReportStatus.Completed;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
+

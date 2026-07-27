@@ -16,4 +16,10 @@ public interface IReportRepository : IGenericRepository<Report>
     /// Tüm raporları listeler.
     /// </summary>
     Task<IEnumerable<Report>> GetAllWithDetailsAsync();
+
+    /// <summary>
+    /// Raporu tamamlanmış olarak işaretler ve detayları kaydeder.
+    /// ReportDetail'lar doğrudan DbSet üzerinden eklenir (EF Core tracking sorunu önlenir).
+    /// </summary>
+    Task<bool> CompleteAsync(Guid reportId, IEnumerable<ReportDetail> newDetails);
 }
