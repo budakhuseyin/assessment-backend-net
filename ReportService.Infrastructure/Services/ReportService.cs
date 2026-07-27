@@ -55,25 +55,16 @@ public class ReportService : IReportService
 
     public async Task<bool> CompleteReportAsync(Guid reportId, CompleteReportRequest request)
     {
-        var report = await _reportRepository.GetByIdWithDetailsAsync(reportId);
-        if (report == null) return false;
-
-        foreach (var detail in request.Details)
+        var newDetails = request.Details.Select(d => new ReportDetail
         {
-            report.ReportDetails.Add(new ReportDetail
-            {
-                UUID = Guid.NewGuid(),
-                Location = detail.Location,
-                PersonCount = detail.PersonCount,
-                PhoneNumberCount = detail.PhoneNumberCount,
-                ReportUUID = report.UUID
-            });
-        }
+            UUID = Guid.NewGuid(),
+            Location = d.Location,
+            PersonCount = d.PersonCount,
+            PhoneNumberCount = d.PhoneNumberCount,
+            ReportUUID = reportId
+        }).ToList();
 
-        report.Status = ReportStatus.Completed;
-        await _reportRepository.UpdateAsync(report);
-
-        return true;
+        return await _reportRepository.CompleteAsync(reportId, newDetails);
     }
 
     // Entity'den DTO'ya dönüşüm (private yardımcı metod)
