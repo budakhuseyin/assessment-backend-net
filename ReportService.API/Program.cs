@@ -20,11 +20,13 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService.Infrastructure.Services.ReportService>();
 
 // MassTransit — Publisher rolü, mesaj yayınlar
+var rabbitMqHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+
 builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        cfg.Host(rabbitMqHost, "/", h =>
         {
             h.Username("guest");
             h.Password("guest");
@@ -38,6 +40,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Uygulama başlarken migration'ları otomatik çalıştır (Docker container desteği için)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ReportDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
