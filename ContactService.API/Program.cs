@@ -30,13 +30,15 @@ builder.Services.AddHttpClient("ReportService", client =>
 });
 
 // MassTransit — Consumer rolü, ReportRequestedEvent'i dinler
+var rabbitMqHost = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<ReportRequestedConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("localhost", "/", h =>
+        cfg.Host(rabbitMqHost, "/", h =>
         {
             h.Username("guest");
             h.Password("guest");
@@ -52,6 +54,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+// Uygulama başlarken migration'ları otomatik çalıştır (Docker container desteği için)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ContactDbContext>();
+    db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();

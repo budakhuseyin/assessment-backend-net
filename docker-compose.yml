@@ -1,0 +1,91 @@
+services:
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PostgreSQL — Her iki servis ortak bir PostgreSQL instance kullanır.
+  # ContactDb ve ReportDb ayrı veritabanı olarak oluşturulur.
+  # ─────────────────────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:14-alpine
+    container_name: aras-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_MULTIPLE_DATABASES: ContactDb,ReportDb
+    ports:
+      - "5433:5432"   # Host 5433 → Container 5432 (yerel 5432 ile çakışmamak için)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # RabbitMQ — Management UI dahil
+  # Kullanıcı adı / Şifre: guest / guest
+  # ─────────────────────────────────────────────────────────────────────────────
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: aras-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # Management UI → http://localhost:15672
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # ReportService — Rapor oluşturma ve sorgulama servisi
+  # Port: http://localhost:5063
+  # ─────────────────────────────────────────────────────────────────────────────
+  report-service:
+    build:
+      context: .
+      dockerfile: ReportService.API/Dockerfile
+    container_name: aras-report-service
+    restart: unless-stopped
+    ports:
+      - "5063:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=ReportDb;Username=postgres;Password=postgres123
+      - RabbitMQ__Host=rabbitmq
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # ContactService — Kişi ve iletişim bilgisi yönetim servisi
+  # Port: http://localhost:5202
+  # ─────────────────────────────────────────────────────────────────────────────
+  contact-service:
+    build:
+      context: .
+      dockerfile: ContactService.API/Dockerfile
+    container_name: aras-contact-service
+    restart: unless-stopped
+    ports:
+      - "5202:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=ContactDb;Username=postgres;Password=postgres123
+      - RabbitMQ__Host=rabbitmq
+      - ReportServiceUrl=http://report-service:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      report-service:
+        condition: service_started
+
+volumes:
+  postgres_data:
