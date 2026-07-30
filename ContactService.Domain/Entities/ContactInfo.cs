@@ -7,8 +7,8 @@ public class ContactInfo
 {
     public Guid UUID { get; set; }
     public ContactInfoType InfoType { get; set; } 
-    public string InfoContent { get; set; }       
+    public string InfoContent { get; set; } = string.Empty;       
     
     public Guid PersonUUID { get; set; }
-    public Person Person { get; set; }
+    public Person Person { get; set; } = null!;
 }
