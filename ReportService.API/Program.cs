@@ -14,6 +14,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ReportDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
 
+// Redis — Dağıtık önbellek (Distributed Cache) kaydı
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.InstanceName = "ReportService:";
+});
+
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 

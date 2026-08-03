@@ -41,6 +41,22 @@ services:
       retries: 10
 
   # ─────────────────────────────────────────────────────────────────────────────
+  # Redis — Dağıtık önbellek (Distributed Cache) servisi
+  # Port: 6379
+  # ─────────────────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: aras-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # ─────────────────────────────────────────────────────────────────────────────
   # ReportService — Rapor oluşturma ve sorgulama servisi
   # Port: http://localhost:5063
   # ─────────────────────────────────────────────────────────────────────────────
@@ -56,10 +72,13 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=ReportDb;Username=postgres;Password=postgres123
       - RabbitMQ__Host=rabbitmq
+      - ConnectionStrings__Redis=redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -79,13 +98,17 @@ services:
       - ConnectionStrings__PostgreSql=Host=postgres;Port=5432;Database=ContactDb;Username=postgres;Password=postgres123
       - RabbitMQ__Host=rabbitmq
       - ReportServiceUrl=http://report-service:8080
+      - ConnectionStrings__Redis=redis:6379
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       report-service:
         condition: service_started
 
 volumes:
   postgres_data:
+  redis_data:

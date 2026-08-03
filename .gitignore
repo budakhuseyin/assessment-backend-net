@@ -13,3 +13,5 @@
 # NuGet packages
 *.nupkg
 **/packages/
+
+GOREV_PLANI.md

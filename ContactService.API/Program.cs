@@ -16,6 +16,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<ContactDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
 
+// Redis — Dağıtık önbellek (Distributed Cache) kaydı
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.InstanceName = "ContactService:";
+});
+
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IPersonRepository, PersonRepository>();
 builder.Services.AddScoped<IContactInfoRepository, ContactInfoRepository>();
