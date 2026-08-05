@@ -5,7 +5,9 @@ using ContactService.Infrastructure.Contexts;
 using ContactService.Infrastructure.Repositories;
 using ContactService.Infrastructure.Services;
 using MassTransit;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,19 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
     options.InstanceName = "ContactService:";
+});
+
+// Rate Limiting — IP bazlı istek sınırlama (60 istek/dakika)
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 60;                        // 1 dakikada max 60 istek
+        limiterOptions.Window = TimeSpan.FromMinutes(1);        // Pencere süresi: 1 dakika
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;                          // Kuyruk yok, aşan istekler anında reddedilir
+    });
+    options.RejectionStatusCode = 429; // Too Many Requests
 });
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -71,7 +86,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
-app.MapControllers();
+app.UseRateLimiter();
+app.MapControllers().RequireRateLimiting("fixed");
+
 
 app.Run();
 

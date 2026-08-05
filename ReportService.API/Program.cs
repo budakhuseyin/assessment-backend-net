@@ -1,9 +1,11 @@
 using MassTransit;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Application.Interfaces.Services;
 using ReportService.Infrastructure.Contexts;
 using ReportService.Infrastructure.Repositories;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,19 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
     options.InstanceName = "ReportService:";
+});
+
+// Rate Limiting — IP bazlı istek sınırlama (60 istek/dakika)
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("fixed", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 60;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = 429;
 });
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -57,7 +72,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
-app.MapControllers();
+app.UseRateLimiter();
+app.MapControllers().RequireRateLimiting("fixed");
+
 
 app.Run();
 
