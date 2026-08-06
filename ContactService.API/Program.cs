@@ -7,9 +7,14 @@ using ContactService.Infrastructure.Services;
 using MassTransit;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Serilog — appsettings.json'dan yapılandırmayı okuyarak loglama sistemini başlat
+builder.Host.UseSerilog((context, config) =>
+    config.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -86,8 +91,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.UseHttpsRedirection();
+app.UseSerilogRequestLogging(); // Her HTTP isteğini otomatik logla
 app.UseRateLimiter();
 app.MapControllers().RequireRateLimiting("fixed");
+
 
 
 app.Run();
