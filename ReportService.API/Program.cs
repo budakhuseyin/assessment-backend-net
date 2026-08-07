@@ -1,6 +1,7 @@
 using MassTransit;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using ReportService.API.Middleware;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Application.Interfaces.Services;
 using ReportService.Infrastructure.Contexts;
@@ -76,10 +77,13 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>(); // Önce hata yakalama
+app.UseMiddleware<CorrelationIdMiddleware>();            // Sonra correlation ID
 app.UseHttpsRedirection();
-app.UseSerilogRequestLogging(); // Her HTTP isteğini otomatik logla
+app.UseSerilogRequestLogging();
 app.UseRateLimiter();
 app.MapControllers().RequireRateLimiting("fixed");
+
 
 
 

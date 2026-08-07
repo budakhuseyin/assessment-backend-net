@@ -1,3 +1,4 @@
+using ContactService.API.Middleware;
 using ContactService.Application.Interfaces.Repositories;
 using ContactService.Application.Interfaces.Services;
 using ContactService.Infrastructure.Consumers;
@@ -90,10 +91,13 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>(); // Önce hata yakalama
+app.UseMiddleware<CorrelationIdMiddleware>();            // Sonra correlation ID
 app.UseHttpsRedirection();
-app.UseSerilogRequestLogging(); // Her HTTP isteğini otomatik logla
+app.UseSerilogRequestLogging();
 app.UseRateLimiter();
 app.MapControllers().RequireRateLimiting("fixed");
+
 
 
 
