@@ -1,12 +1,15 @@
 using MassTransit;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using ReportService.API.Middleware;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Application.Interfaces.Services;
 using ReportService.Infrastructure.Contexts;
 using ReportService.Infrastructure.Repositories;
 using Serilog;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +44,23 @@ builder.Services.AddRateLimiter(options =>
     });
     options.RejectionStatusCode = 429;
 });
+
+// Health Checks — PostgreSQL, Redis ve RabbitMQ bağlantı durumu kontrolü
+var rabbitMqHostForHealth = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        builder.Configuration.GetConnectionString("PostgreSql")!,
+        name: "postgresql",
+        tags: new[] { "db", "ready" })
+    .AddRedis(
+        builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379",
+        name: "redis",
+        tags: new[] { "cache", "ready" })
+    .AddRabbitMQ(
+        rabbitConnectionString: $"amqp://guest:guest@{rabbitMqHostForHealth}:5672",
+        name: "rabbitmq",
+        tags: new[] { "messaging", "ready" });
+
 
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
@@ -84,8 +104,24 @@ app.UseSerilogRequestLogging();
 app.UseRateLimiter();
 app.MapControllers().RequireRateLimiting("fixed");
 
-
-
-
+// Health Check endpoint'i — /health adresinden servis durumunu döndür
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = async (context, report) =>
+    {
+        context.Response.ContentType = "application/json";
+        var result = JsonSerializer.Serialize(new
+        {
+            status = report.Status.ToString(),
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description
+            })
+        });
+        await context.Response.WriteAsync(result);
+    }
+});
 app.Run();
 
