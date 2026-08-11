@@ -105,8 +105,10 @@ if (app.Environment.IsDevelopment())
 }
 
 // Uygulama başlarken migration'ları otomatik çalıştır (Docker container desteği için)
-using (var scope = app.Services.CreateScope())
+// Integration test ortamında InMemory DB kullanıldığından migration atlanır
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ContactDbContext>();
     db.Database.Migrate();
 }
@@ -144,3 +146,5 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 
 app.Run();
 
+// Integration testlerinin WebApplicationFactory<Program> kullanabilmesi için gerekli
+public partial class Program { }
