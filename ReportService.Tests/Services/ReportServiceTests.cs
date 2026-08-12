@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Caching.Distributed;
 using Moq;
 using ReportService.Application.Interfaces.Repositories;
 using ReportService.Domain.Entities;
@@ -12,13 +13,18 @@ public class ReportServiceTests
 {
     private readonly Mock<IReportRepository> _mockReportRepository;
     private readonly Mock<IPublishEndpoint> _mockPublishEndpoint;
+    private readonly Mock<IDistributedCache> _mockCache;
     private readonly ReportService.Infrastructure.Services.ReportService _reportService;
 
     public ReportServiceTests()
     {
         _mockReportRepository = new Mock<IReportRepository>();
         _mockPublishEndpoint = new Mock<IPublishEndpoint>();
-        _reportService = new ReportService.Infrastructure.Services.ReportService(_mockReportRepository.Object, _mockPublishEndpoint.Object);
+        _mockCache = new Mock<IDistributedCache>();
+        _reportService = new ReportService.Infrastructure.Services.ReportService(
+            _mockReportRepository.Object,
+            _mockPublishEndpoint.Object,
+            _mockCache.Object);
     }
 
     // ─────────────────────────── CreateReportAsync Testleri ───────────────────────────

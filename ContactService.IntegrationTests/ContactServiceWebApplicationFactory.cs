@@ -1,10 +1,11 @@
 using ContactService.Infrastructure.Contexts;
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace ContactService.IntegrationTests;
 
@@ -16,7 +17,6 @@ namespace ContactService.IntegrationTests;
 public class ContactServiceWebApplicationFactory : WebApplicationFactory<Program>
 {
     // Tüm testlerin aynı InMemory DB'ye bakabilmesi için sabit bir isim kullanılır.
-    // Guid, factory oluşturulduğunda bir kez üretilir; her request'te değil.
     private readonly string _dbName = "ContactTestDb_" + Guid.NewGuid();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -26,11 +26,28 @@ public class ContactServiceWebApplicationFactory : WebApplicationFactory<Program
             // Gerçek PostgreSQL bağlantısını kaldır, InMemory ile değiştir
             services.RemoveAll<DbContextOptions<ContactDbContext>>();
             services.AddDbContext<ContactDbContext>(options =>
-                options.UseInMemoryDatabase(_dbName)); // Tüm requestler aynı DB'yi kullanır
+                options.UseInMemoryDatabase(_dbName));
 
-            // Redis'i InMemory ile değiştir (test ortamında Redis gerekmez)
+            // Redis'i InMemory ile değiştir
             services.RemoveAll<IDistributedCache>();
             services.AddDistributedMemoryCache();
+
+            // MassTransit/RabbitMQ servislerini kaldır (GitHub Actions'da RabbitMQ yok)
+            // IBus, IPublishEndpoint, ISendEndpointProvider gibi MassTransit servislerini temizle
+            var massTransitDescriptors = services
+                .Where(d => d.ServiceType.Namespace != null &&
+                            d.ServiceType.Namespace.StartsWith("MassTransit"))
+                .ToList();
+
+            foreach (var descriptor in massTransitDescriptors)
+                services.Remove(descriptor);
+
+            // MassTransit'i InMemory test modu ile yeniden kaydet
+            services.AddMassTransit(x =>
+            {
+                x.UsingInMemory((context, cfg) =>
+                    cfg.ConfigureEndpoints(context));
+            });
         });
 
         builder.UseEnvironment("Testing");
