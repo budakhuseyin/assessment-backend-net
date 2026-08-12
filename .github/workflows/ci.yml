@@ -27,19 +27,7 @@ jobs:
       - name: Bağımlılıkları Yükle
         run: dotnet restore ArasContactDirectory.sln
 
-      # 4. Projeyi derle (build)
-      - name: Projeyi Derle
-        run: dotnet build ArasContactDirectory.sln --no-restore --configuration Release
-
-      # 5. Birim testleri çalıştır (ContactService.Tests)
-      - name: Birim Testleri Çalıştır (ContactService)
-        run: dotnet test ContactService.Tests/ContactService.Tests.csproj --no-build --configuration Release --verbosity normal
-
-      # 6. Birim testleri çalıştır (ReportService.Tests)
-      - name: Birim Testleri Çalıştır (ReportService)
-        run: dotnet test ReportService.Tests/ReportService.Tests.csproj --no-build --configuration Release --verbosity normal
-
-      # 7. Integration testleri çalıştır (ContactService.IntegrationTests)
-      # InMemory DB kullanıldığından Docker gerektirmez
-      - name: Integration Testleri Çalıştır
-        run: dotnet test ContactService.IntegrationTests/ContactService.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
+      # 4. Tüm testleri çalıştır (build + test tek adımda)
+      # --no-build kaldırıldı: GitHub SDK 10.x ile DLL yolu uyumsuzluğunu önlemek için
+      - name: Testleri Çalıştır (Birim + Integration)
+        run: dotnet test ArasContactDirectory.sln --configuration Release --verbosity normal
