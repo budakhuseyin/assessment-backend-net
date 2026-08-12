@@ -2,6 +2,7 @@ using ContactService.Application.DTOs;
 using ContactService.Application.Interfaces.Repositories;
 using ContactService.Domain.Entities;
 using ContactService.Infrastructure.Services;
+using Microsoft.Extensions.Caching.Distributed;
 using Moq;
 using Xunit;
 
@@ -10,6 +11,7 @@ namespace ContactService.Tests.Services;
 public class PersonServiceTests
 {
     private readonly Mock<IPersonRepository> _mockPersonRepository;
+    private readonly Mock<IDistributedCache> _mockCache;
     private readonly PersonService _personService;
 
     public PersonServiceTests()
@@ -17,10 +19,13 @@ public class PersonServiceTests
         // Gerçek bir veritabanı kullanmak yerine Moq kütüphanesi ile "sahte (mock)" bir repository oluşturuyoruz.
         _mockPersonRepository = new Mock<IPersonRepository>();
 
-        // Servisimizi bu sahte repository ile ayağa kaldırıyoruz.
+        // Cache-Aside pattern sonrası eklenen IDistributedCache bağımlılığı için mock
+        _mockCache = new Mock<IDistributedCache>();
+
+        // Servisimizi bu sahte bağımlılıklarla ayağa kaldırıyoruz.
         // Not: GetAllAsync ve GetByIdAsync DbContext kullandığı için sadece bu metodları test ederken
         // repository mock'u yeterli, DbContext'e ihtiyaç yok. Bu yüzden null! geçiyoruz.
-        _personService = new PersonService(_mockPersonRepository.Object, null!);
+        _personService = new PersonService(_mockPersonRepository.Object, null!, _mockCache.Object);
     }
 
     // ─────────────────────────── CreateAsync Testleri ───────────────────────────

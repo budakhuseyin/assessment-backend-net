@@ -1,0 +1,45 @@
+name: CI Pipeline
+
+# Her push ve pull request'te otomatik olarak tetiklenir
+on:
+  push:
+    branches: [ "main", "development" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Kaynak kodu checkout et
+      - name: Kodu İndir (Checkout)
+        uses: actions/checkout@v4
+
+      # 2. .NET 8 SDK'yı kur
+      - name: .NET 8 SDK Kurulumu
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 3. Bağımlılıkları yükle (restore)
+      - name: Bağımlılıkları Yükle
+        run: dotnet restore ArasContactDirectory.sln
+
+      # 4. Projeyi derle (build)
+      - name: Projeyi Derle
+        run: dotnet build ArasContactDirectory.sln --no-restore --configuration Release
+
+      # 5. Birim testleri çalıştır (ContactService.Tests)
+      - name: Birim Testleri Çalıştır (ContactService)
+        run: dotnet test ContactService.Tests/ContactService.Tests.csproj --no-build --configuration Release --verbosity normal
+
+      # 6. Birim testleri çalıştır (ReportService.Tests)
+      - name: Birim Testleri Çalıştır (ReportService)
+        run: dotnet test ReportService.Tests/ReportService.Tests.csproj --no-build --configuration Release --verbosity normal
+
+      # 7. Integration testleri çalıştır (ContactService.IntegrationTests)
+      # InMemory DB kullanıldığından Docker gerektirmez
+      - name: Integration Testleri Çalıştır
+        run: dotnet test ContactService.IntegrationTests/ContactService.IntegrationTests.csproj --no-build --configuration Release --verbosity normal
