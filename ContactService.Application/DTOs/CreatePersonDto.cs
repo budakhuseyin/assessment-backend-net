@@ -1,8 +1,8 @@
 namespace ContactService.Application.DTOs;
 
-public class CreatePersonDto
+public record CreatePersonDto
 {
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Company { get; set; } = string.Empty;
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string Company { get; init; } = string.Empty;
 }

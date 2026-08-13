@@ -1,17 +1,17 @@
 namespace ContactService.Application.DTOs;
 
-public class PersonResponseDto
+public record PersonResponseDto
 {
-    public Guid UUID { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string Company { get; set; } = string.Empty;
-    public List<ContactInfoDto> ContactInfos { get; set; } = new();
+    public Guid UUID { get; init; }
+    public string FirstName { get; init; } = string.Empty;
+    public string LastName { get; init; } = string.Empty;
+    public string Company { get; init; } = string.Empty;
+    public List<ContactInfoDto> ContactInfos { get; init; } = new();
 }
 
-public class ContactInfoDto
+public record ContactInfoDto
 {
-    public Guid UUID { get; set; }
-    public string InfoType { get; set; } = string.Empty;
-    public string InfoContent { get; set; } = string.Empty;
+    public Guid UUID { get; init; }
+    public string InfoType { get; init; } = string.Empty;
+    public string InfoContent { get; init; } = string.Empty;
 }

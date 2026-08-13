@@ -4,10 +4,11 @@ namespace ContactService.Application.DTOs;
 
 /// <summary>
 /// İletişim bilgisini döndürmek için kullanılan yanıt modeli.
+/// Record type: immutable, value-based equality.
 /// </summary>
-public class ContactInfoResponse
+public record ContactInfoResponse
 {
-    public Guid UUID { get; set; }
-    public ContactInfoType InfoType { get; set; }
-    public string? InfoContent { get; set; }
+    public Guid UUID { get; init; }
+    public ContactInfoType InfoType { get; init; }
+    public string? InfoContent { get; init; }
 }

@@ -4,11 +4,12 @@ namespace ReportService.Application.DTOs;
 
 /// <summary>
 /// Rapor bilgilerini istemciye döndürmek için kullanılan yanıt modeli.
+/// Record type: immutable, value-based equality.
 /// </summary>
-public class ReportResponse
+public record ReportResponse
 {
-    public Guid UUID { get; set; }
-    public DateTime RequestedAt { get; set; }
-    public ReportStatus Status { get; set; }
-    public List<ReportDetailResponse> ReportDetails { get; set; } = new();
+    public Guid UUID { get; init; }
+    public DateTime RequestedAt { get; init; }
+    public ReportStatus Status { get; init; }
+    public List<ReportDetailResponse> ReportDetails { get; init; } = new();
 }

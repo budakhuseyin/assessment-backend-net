@@ -2,16 +2,16 @@ namespace ReportService.Application.DTOs;
 
 /// <summary>
 /// ContactService'ten gelen, raporu tamamlamak için kullanılan istek modeli.
-/// Her eleman bir lokasyon için hesaplanan istatistikleri temsil eder.
+/// Record type: immutable, value-based equality.
 /// </summary>
-public class CompleteReportRequest
+public record CompleteReportRequest
 {
-    public List<ReportDetailRequest> Details { get; set; } = new();
+    public List<ReportDetailRequest> Details { get; init; } = new();
 }
 
-public class ReportDetailRequest
+public record ReportDetailRequest
 {
-    public string? Location { get; set; }
-    public int PersonCount { get; set; }
-    public int PhoneNumberCount { get; set; }
+    public string? Location { get; init; }
+    public int PersonCount { get; init; }
+    public int PhoneNumberCount { get; init; }
 }

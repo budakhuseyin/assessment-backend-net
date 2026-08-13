@@ -2,12 +2,13 @@ namespace ContactService.Application.DTOs;
 
 /// <summary>
 /// Kişi bilgilerini döndürmek için kullanılan yanıt modeli.
+/// Record type: immutable, value-based equality.
 /// </summary>
-public class PersonResponse
+public record PersonResponse
 {
-    public Guid UUID { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public string? Company { get; set; }
-    public List<ContactInfoResponse> ContactInfos { get; set; } = new();
+    public Guid UUID { get; init; }
+    public string? FirstName { get; init; }
+    public string? LastName { get; init; }
+    public string? Company { get; init; }
+    public List<ContactInfoResponse> ContactInfos { get; init; } = new();
 }
