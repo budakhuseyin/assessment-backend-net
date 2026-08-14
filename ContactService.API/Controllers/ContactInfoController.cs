@@ -6,10 +6,10 @@ namespace ContactService.API.Controllers;
 
 /// <summary>
 /// Bir kişiye ait iletişim bilgilerinin (telefon, email, konum) yönetimi için HTTP endpoint'leri.
+/// Ortak davranışlar BaseApiController'dan miras alınır.
 /// </summary>
-[ApiController]
 [Route("api/person/{personId:guid}/contact")]
-public class ContactInfoController : ControllerBase
+public class ContactInfoController : BaseApiController
 {
     private readonly IContactInfoService _contactInfoService;
 
@@ -27,11 +27,11 @@ public class ContactInfoController : ControllerBase
         try
         {
             var result = await _contactInfoService.AddContactInfoAsync(personId, request);
-            return CreatedAtAction(nameof(Add), new { personId }, result);
+            return Created(nameof(Add), new { personId }, result);
         }
         catch (KeyNotFoundException ex)
         {
-            return NotFound(ex.Message);
+            return NotFoundResult(ex.Message);
         }
     }
 
@@ -42,7 +42,7 @@ public class ContactInfoController : ControllerBase
     public async Task<IActionResult> Delete(Guid personId, Guid contactInfoId)
     {
         var result = await _contactInfoService.DeleteContactInfoAsync(contactInfoId);
-        if (!result) return NotFound();
+        if (!result) return NotFoundResult();
         return NoContent();
     }
 }

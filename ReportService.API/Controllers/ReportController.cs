@@ -6,10 +6,9 @@ namespace ReportService.API.Controllers;
 
 /// <summary>
 /// Rapor yönetimi için HTTP endpoint'leri sağlayan controller.
+/// Ortak davranışlar BaseApiController'dan miras alınır.
 /// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class ReportController : ControllerBase
+public class ReportController : BaseApiController
 {
     private readonly IReportService _reportService;
 
@@ -25,7 +24,7 @@ public class ReportController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var reports = await _reportService.GetAllAsync();
-        return Ok(reports);
+        return Success(reports);
     }
 
     /// <summary>
@@ -35,8 +34,8 @@ public class ReportController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var report = await _reportService.GetByIdAsync(id);
-        if (report == null) return NotFound();
-        return Ok(report);
+        if (report == null) return NotFoundResult();
+        return Success(report);
     }
 
     /// <summary>
@@ -47,7 +46,7 @@ public class ReportController : ControllerBase
     public async Task<IActionResult> Create()
     {
         var created = await _reportService.CreateReportAsync();
-        return CreatedAtAction(nameof(GetById), new { id = created.UUID }, created);
+        return Created(nameof(GetById), new { id = created.UUID }, created);
     }
 
     /// <summary>
@@ -57,8 +56,7 @@ public class ReportController : ControllerBase
     public async Task<IActionResult> Complete(Guid id, [FromBody] CompleteReportRequest request)
     {
         var success = await _reportService.CompleteReportAsync(id, request);
-        if (!success) return NotFound();
+        if (!success) return NotFoundResult();
         return NoContent();
     }
 }
-

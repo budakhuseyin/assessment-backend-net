@@ -6,10 +6,9 @@ namespace ContactService.API.Controllers;
 
 /// <summary>
 /// Kişi (rehber kaydı) yönetimi için HTTP endpoint'leri sağlayan controller.
+/// Ortak davranışlar BaseApiController'dan miras alınır.
 /// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class PersonController : ControllerBase
+public class PersonController : BaseApiController
 {
     private readonly IPersonService _personService;
 
@@ -25,7 +24,7 @@ public class PersonController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var persons = await _personService.GetAllAsync();
-        return Ok(persons);
+        return Success(persons);
     }
 
     /// <summary>
@@ -35,8 +34,8 @@ public class PersonController : ControllerBase
     public async Task<IActionResult> GetById(Guid id)
     {
         var person = await _personService.GetByIdAsync(id);
-        if (person == null) return NotFound();
-        return Ok(person);
+        if (person == null) return NotFoundResult();
+        return Success(person);
     }
 
     /// <summary>
@@ -46,7 +45,7 @@ public class PersonController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreatePersonRequest request)
     {
         var created = await _personService.CreateAsync(request);
-        return CreatedAtAction(nameof(GetById), new { id = created.UUID }, created);
+        return Created(nameof(GetById), new { id = created.UUID }, created);
     }
 
     /// <summary>
@@ -56,7 +55,7 @@ public class PersonController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _personService.DeleteAsync(id);
-        if (!result) return NotFound();
+        if (!result) return NotFoundResult();
         return NoContent();
     }
 }

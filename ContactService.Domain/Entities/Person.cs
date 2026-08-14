@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-
 namespace ContactService.Domain.Entities;
 
-public class Person
+/// <summary>
+/// Rehberdeki bir kişiyi temsil eden entity.
+/// BaseEntity'den UUID ve CreatedAt alanlarını miras alır.
+/// </summary>
+public class Person : BaseEntity
 {
-    public Guid UUID { get; set; }
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Company { get; set; }
